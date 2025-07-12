@@ -1,0 +1,10 @@
+python-dotenv
+pandas
+openai
+langchain
+langchain-community
+langchain-openai
+faiss-cpu
+requests
+streamlit
+google-cloud-secret-manager

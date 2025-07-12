@@ -1,18 +1,26 @@
-from langchain import hub
+import os
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
+from google.cloud import secretmanager
 
+def get_openai_key():
+    client = secretmanager.SecretManagerServiceClient()
+    name = f"projects/rag-finance-demo/secrets/openai-api-key/versions/latest"
+    response = client.access_secret_version(request={"name": name})
+    return response.payload.data.decode("UTF-8")
 
 def load_qa_pipeline():
-    embeddings = OpenAIEmbeddings()
+
+    openai_api_key = get_openai_key()
+    embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
     vectorstore = FAISS.load_local("faiss_finance_news", embeddings, allow_dangerous_deserialization=True)
     retriever = vectorstore.as_retriever()
 
-    llm = ChatOpenAI(model_name="gpt-4", temperature=0.0, max_tokens=1000)
+    llm = ChatOpenAI(model_name="gpt-4", temperature=0.0, max_tokens=1000, openai_api_key=openai_api_key)
 
     rag_prompt = PromptTemplate(
         input_variables=["context", "input"],
