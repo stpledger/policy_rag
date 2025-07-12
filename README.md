@@ -2,7 +2,11 @@
 
 This project is a lightweight prototype of a Retrieval-Augmented Generation (RAG) system that can read recent financial and business news and intelligently answer natural language questions about it.
 
+⚠️ **Note**: NewsAPI only provides content previews (not full article text), which may limit the detail available for question answering.
+
 🔮 **Future extension idea**: Automatically deliver personalized summaries of financial news based on an individual’s or organization’s investment portfolio.
+
+🔗[Demo Website](https://finance-rag.streamlit.app/)
 
 ---
 
@@ -61,4 +65,4 @@ Relevant Context:
 - `LangChain` for orchestration
 - `SQLite` for document storage
 - `NewsAPI` for article ingestion
-
+- `Streamlit Community Cloud` for deployment
