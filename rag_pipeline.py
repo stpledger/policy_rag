@@ -4,14 +4,17 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def load_qa_pipeline():
     embeddings = OpenAIEmbeddings()
-    vectorstore = FAISS.load_local("faiss_finance_news", embeddings, allow_dangerous_deserialization=True)
+    vectorstore = FAISS.load_local("ed_policy_vec", embeddings, allow_dangerous_deserialization=True)
     retriever = vectorstore.as_retriever()
 
-    llm = ChatOpenAI(model_name="gpt-4", temperature=0.0, max_tokens=1000)
+    llm = ChatOpenAI(model_name="gpt-4", temperature=0.0, max_tokens=2000)
 
     rag_prompt = PromptTemplate(
         input_variables=["context", "input"],
@@ -38,7 +41,7 @@ def ask_question(question):
     return response
 
 if __name__ == "__main__":
-    query = "What are the latest trends in the stock market?"
+    query = "What are the latest trends in education policy?"
     answer = ask_question(query)
     print(f"Query: {query}")
     print(f"Answer: {answer}")
