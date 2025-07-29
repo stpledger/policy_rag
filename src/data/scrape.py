@@ -80,7 +80,7 @@ import re
 import sqlite3
 
 # Connect to SQLite DB
-conn = sqlite3.connect("main.db")
+conn = sqlite3.connect("../../data/raw/main.db")
 cursor = conn.cursor()
 
 # Create articles table

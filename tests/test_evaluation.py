@@ -90,8 +90,8 @@ Note:
 import sys
 import json
 from datetime import datetime
-from rag_pipeline import EnhancedRAGPipeline
-from evaluation import RAGEvaluator, quick_evaluate, run_quick_benchmark
+from src.core.rag_pipeline import EnhancedRAGPipeline
+from src.evaluation.evaluation import RAGEvaluator, quick_evaluate, run_quick_benchmark
 
 
 def test_single_evaluation():

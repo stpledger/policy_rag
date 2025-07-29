@@ -56,8 +56,8 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from retriever import AdvancedRetriever
-from config import get_config
+from .retriever import AdvancedRetriever
+from .config import get_config
 import logging
 from typing import Dict, Any, List, Optional
 
@@ -317,7 +317,7 @@ Answer:"""
         """
         try:
             # Import here to avoid circular imports
-            from evaluation import RAGEvaluator
+            from ..evaluation.evaluation import RAGEvaluator
             
             # Create evaluator instance
             evaluator = RAGEvaluator(pipeline=self)
@@ -375,7 +375,7 @@ Answer:"""
             Dictionary containing benchmark results
         """
         try:
-            from evaluation import RAGEvaluator
+            from ..evaluation.evaluation import RAGEvaluator
             
             evaluator = RAGEvaluator(pipeline=self)
             return evaluator.run_benchmark_suite(test_questions)

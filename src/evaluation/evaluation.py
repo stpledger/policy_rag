@@ -96,8 +96,8 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.schema import Document
 
-from config import get_config
-from rag_pipeline import EnhancedRAGPipeline
+from ..core.config import get_config
+from ..core.rag_pipeline import EnhancedRAGPipeline
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)

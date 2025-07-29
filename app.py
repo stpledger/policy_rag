@@ -69,8 +69,8 @@ Dependencies:
 """
 
 import streamlit as st
-from rag_pipeline import EnhancedRAGPipeline
-from config import get_config
+from src.core.rag_pipeline import EnhancedRAGPipeline
+from src.core.config import get_config
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go

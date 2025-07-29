@@ -66,7 +66,7 @@ from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain.retrievers import EnsembleRetriever
 from langchain_community.retrievers import BM25Retriever
 from langchain_core.documents import Document
-from config import get_config
+from .config import get_config
 import logging
 from typing import List, Optional
 import pickle

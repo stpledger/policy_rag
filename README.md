@@ -29,7 +29,12 @@ A comprehensive Retrieval-Augmented Generation (RAG) system for education policy
 
 4. **Validate setup**
    ```bash
-   python validate_config.py
+   python scripts/validate.py
+   ```
+
+5. **Initialize system (optional)**
+   ```bash
+   python scripts/setup.py
    ```
 
 ### Running the Application
@@ -45,7 +50,7 @@ Navigate to `http://localhost:8501` to access the interactive interface with:
 
 #### Python API
 ```python
-from rag_pipeline import EnhancedRAGPipeline
+from src.core.rag_pipeline import EnhancedRAGPipeline
 
 # Initialize pipeline
 pipeline = EnhancedRAGPipeline()
@@ -61,7 +66,7 @@ print(result['answer'])
 
 #### Evaluation
 ```python
-from evaluation import RAGEvaluator
+from src.evaluation.evaluation import RAGEvaluator
 
 # Evaluate performance
 evaluator = RAGEvaluator()
@@ -162,35 +167,45 @@ jupyter notebook scratchpad.ipynb
 
 ```
 policy_rag/
-├── 📄 Core System Files
-│   ├── app.py                 # Streamlit web interface
-│   ├── rag_pipeline.py        # Enhanced RAG pipeline with evaluation
-│   ├── retriever.py           # Advanced retrieval strategies
-│   ├── evaluation.py          # Comprehensive evaluation system
-│   └── config.py              # Centralized configuration management
+├── 📄 app.py                    # Streamlit web application
+├── 📄 requirements.txt          # Python dependencies
+├── 📄 README.md                 # Project documentation
 │
-├── 🔧 Data Processing
-│   ├── scrape.py              # Web scraping for policy documents
-│   ├── vectorize.py           # Document chunking and vector storage
-│   └── links.txt              # Source URLs for scraping
+├── 📦 src/                      # Source code modules
+│   ├── core/                    # Core RAG components
+│   │   ├── config.py            # Configuration management
+│   │   ├── rag_pipeline.py      # Enhanced RAG pipeline
+│   │   └── retriever.py         # Advanced retrieval strategies
+│   ├── data/                    # Data processing modules
+│   │   ├── scrape.py            # Web scraping system
+│   │   └── vectorize.py         # Document vectorization
+│   ├── evaluation/              # Evaluation system
+│   │   └── evaluation.py        # Comprehensive evaluation
+│   └── utils/                   # Utility modules
+│       └── validate_config.py   # Configuration validation
 │
-├── � Testing & Validation
-│   ├── test_evaluation.py     # Evaluation system tests
-│   ├── validate_config.py     # Configuration validation
-│   └── scratchpad.ipynb       # Development notebook
+├── 🧪 tests/                    # Test suite
+│   └── test_evaluation.py       # Evaluation system tests
 │
-├── 📊 Data & Storage
-│   ├── main.db                # SQLite database with articles
-│   ├── ed_policy_vec/         # FAISS vector store
-│   └── docs/                  # PDF documents (Brookings papers)
+├── 📊 data/                     # Data storage
+│   ├── raw/                     # Raw scraped data
+│   │   ├── main.db              # SQLite database
+│   │   └── links.txt            # Source URLs
+│   ├── processed/               # Processed data
+│   │   └── ed_policy_vec/       # FAISS vectorstore
+│   └── docs/                    # Source documents
+│       └── *.pdf                # Brookings policy papers
 │
-├── 📋 Configuration
-│   ├── requirements.txt       # Python dependencies
-│   ├── .env                   # Environment variables (create this)
-│   └── README.md              # This file
+├── 🔧 scripts/                  # Utility scripts
+│   ├── setup.py                 # System initialization
+│   ├── validate.py              # System validation
+│   └── benchmark.py             # Performance testing
 │
-└── 🗃️ Archives
-    └── archive/               # Backup of original implementations
+├── 📝 notebooks/                # Development notebooks
+│   └── scratchpad.ipynb         # Development notebook
+│
+└── 🗃️ archive/                  # Backup files
+    └── rag_pipeline.py          # Original implementation
 ```
 
 ## 📈 Performance Benchmarks

@@ -127,8 +127,8 @@ class RAGConfig:
     """
     
     # Database settings
-    db_path: str = "main.db"
-    vectorstore_path: str = "ed_policy_vec"
+    db_path: str = "data/raw/main.db"
+    vectorstore_path: str = "data/processed/ed_policy_vec"
     
     # LLM settings
     model_name: str = "gpt-4"
@@ -156,8 +156,13 @@ class RAGConfig:
     enable_caching: bool = True
     cache_ttl: int = 3600  # 1 hour in seconds
     
-    def validate(self) -> None:
-        """Validate configuration settings."""
+    def validate(self, check_files: bool = True) -> None:
+        """
+        Validate configuration settings.
+        
+        Args:
+            check_files: Whether to validate file existence (set to False during import)
+        """
         errors = []
         
         # Validate API keys
@@ -186,12 +191,13 @@ class RAGConfig:
         if self.chunk_overlap >= self.chunk_size:
             errors.append("chunk_overlap must be less than chunk_size")
         
-        # Validate file paths
-        if not os.path.exists(self.db_path):
-            errors.append(f"Database file not found: {self.db_path}")
-        
-        if not os.path.exists(self.vectorstore_path):
-            errors.append(f"Vectorstore directory not found: {self.vectorstore_path}")
+        # Validate file paths only if requested
+        if check_files:
+            if not os.path.exists(self.db_path):
+                errors.append(f"Database file not found: {self.db_path}")
+            
+            if not os.path.exists(self.vectorstore_path):
+                errors.append(f"Vectorstore directory not found: {self.vectorstore_path}")
         
         if errors:
             raise ValueError("Configuration validation failed:\n" + "\n".join(f"- {error}" for error in errors))
@@ -201,31 +207,31 @@ class RAGConfig:
         """Create configuration from environment variables with defaults."""
         return cls(
             # Database settings
-            db_path=os.getenv("RAG_DB_PATH", cls.db_path),
-            vectorstore_path=os.getenv("RAG_VECTORSTORE_PATH", cls.vectorstore_path),
+            db_path=os.getenv("RAG_DB_PATH", "data/raw/main.db"),
+            vectorstore_path=os.getenv("RAG_VECTORSTORE_PATH", "data/processed/ed_policy_vec"),
 
             # LLM settings
-            model_name=os.getenv("RAG_MODEL_NAME", cls.model_name),
-            temperature=float(os.getenv("RAG_TEMPERATURE", cls.temperature)),
-            max_tokens=int(os.getenv("RAG_MAX_TOKENS", cls.max_tokens)),
+            model_name=os.getenv("RAG_MODEL_NAME", "gpt-4"),
+            temperature=float(os.getenv("RAG_TEMPERATURE", "0.0")),
+            max_tokens=int(os.getenv("RAG_MAX_TOKENS", "2000")),
 
             # Retrieval settings
-            retrieval_k=int(os.getenv("RAG_RETRIEVAL_K", cls.retrieval_k)),
-            similarity_threshold=float(os.getenv("RAG_SIMILARITY_THRESHOLD", cls.similarity_threshold)),
-            chunk_size=int(os.getenv("RAG_CHUNK_SIZE", cls.chunk_size)),
-            chunk_overlap=int(os.getenv("RAG_CHUNK_OVERLAP", cls.chunk_overlap)),
+            retrieval_k=int(os.getenv("RAG_RETRIEVAL_K", "5")),
+            similarity_threshold=float(os.getenv("RAG_SIMILARITY_THRESHOLD", "0.7")),
+            chunk_size=int(os.getenv("RAG_CHUNK_SIZE", "1000")),
+            chunk_overlap=int(os.getenv("RAG_CHUNK_OVERLAP", "200")),
 
             # Embedding settings
-            embedding_model=os.getenv("RAG_EMBEDDING_MODEL", cls.embedding_model),
+            embedding_model=os.getenv("RAG_EMBEDDING_MODEL", "text-embedding-ada-002"),
 
             # Application settings
-            app_title=os.getenv("RAG_APP_TITLE", cls.app_title),
-            max_chat_history=int(os.getenv("RAG_MAX_CHAT_HISTORY", cls.max_chat_history)),
-            enable_analytics=os.getenv("RAG_ENABLE_ANALYTICS", str(cls.enable_analytics)).lower() == "true",
+            app_title=os.getenv("RAG_APP_TITLE", "🏛️ Education Policy RAG System"),
+            max_chat_history=int(os.getenv("RAG_MAX_CHAT_HISTORY", "10")),
+            enable_analytics=os.getenv("RAG_ENABLE_ANALYTICS", "true").lower() == "true",
 
             # Performance settings
-            enable_caching=os.getenv("RAG_ENABLE_CACHING", str(cls.enable_caching)).lower() == "true",
-            cache_ttl=int(os.getenv("RAG_CACHE_TTL", cls.cache_ttl)),
+            enable_caching=os.getenv("RAG_ENABLE_CACHING", "true").lower() == "true",
+            cache_ttl=int(os.getenv("RAG_CACHE_TTL", "3600")),
         )
     
     def to_dict(self) -> dict:
@@ -255,7 +261,8 @@ class RAGConfig:
 # Global configuration instance
 try:
     config = RAGConfig.from_env()
-    config.validate()
+    # Validate config but skip file checks during import
+    config.validate(check_files=False)
 except ValueError as e:
     print(f"Configuration error: {e}")
     print("Using default configuration without validation...")
@@ -272,7 +279,7 @@ def reload_config() -> RAGConfig:
     """Reload configuration from environment variables."""
     global config
     config = RAGConfig.from_env()
-    config.validate()
+    config.validate(check_files=True)  # Check files when explicitly reloading
     return config
 
 

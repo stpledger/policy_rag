@@ -102,7 +102,7 @@ Note:
 
 import sys
 import os
-from config import get_config, print_config
+from ..core.config import get_config, print_config
 
 def validate_environment():
     """

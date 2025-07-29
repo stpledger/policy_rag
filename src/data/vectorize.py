@@ -86,7 +86,7 @@ from langchain_experimental.text_splitter import SemanticChunker
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
 from langchain_core.documents import Document
-from config import get_config
+from ..core.config import get_config
 import logging
 
 # Set up logging
