@@ -1,7 +1,11 @@
 import streamlit as st
 from rag_pipeline import ask_question
+from config import get_config
 
-st.title("🏛️💬 Education Policy Q&A")
+# Get configuration
+config = get_config()
+
+st.title(config.app_title)
 
 # UI
 question = st.text_input("Ask a question about education policy:")

@@ -4,6 +4,11 @@ openai
 langchain
 langchain-community
 langchain-openai
+langchain-experimental
 faiss-cpu
 requests
 streamlit
+beautifulsoup4
+sqlite3
+plotly
+pydantic
