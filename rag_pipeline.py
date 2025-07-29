@@ -1,6 +1,55 @@
 """
-Enhanced RAG pipeline using the advanced retriever system.
-Provides multiple retrieval strategies and improved document processing.
+Enhanced RAG Pipeline for Education Policy Analysis
+==================================================
+
+This module implements an advanced Retrieval-Augmented Generation (RAG) pipeline
+specifically designed for education policy research and analysis. It provides
+multiple retrieval strategies, comprehensive evaluation capabilities, and
+seamless integration with the evaluation system.
+
+Key Features:
+- Multiple retrieval strategies (vector, MMR, multi-query, BM25, ensemble, compressed)
+- Integrated evaluation and benchmarking capabilities
+- Advanced document processing with semantic chunking
+- Strategy comparison and optimization tools
+- Enterprise-ready error handling and logging
+
+Classes:
+    EnhancedRAGPipeline: Main RAG pipeline with advanced retrieval and evaluation
+
+Functions:
+    create_enhanced_pipeline(): Factory function for pipeline creation
+    ask_question(): Backward-compatible question answering interface
+
+Example Usage:
+    >>> from rag_pipeline import EnhancedRAGPipeline
+    >>> pipeline = EnhancedRAGPipeline()
+    >>> result = pipeline.ask_question(
+    ...     "What are the main challenges in education policy?",
+    ...     strategy="ensemble"
+    ... )
+    >>> print(result['answer'])
+    
+    # Evaluate response quality
+    >>> eval_result = pipeline.evaluate_response(
+    ...     "How effective are school choice programs?",
+    ...     strategy="ensemble"
+    ... )
+    >>> print(f"Score: {eval_result['overall_score']:.2f}/10")
+    
+    # Compare strategies
+    >>> comparison = pipeline.compare_strategies(
+    ...     "What role do teachers play in reform?"
+    ... )
+    >>> print(f"Best strategy: {comparison['summary']}")
+
+Dependencies:
+    - langchain_openai: For ChatOpenAI and language model integration
+    - langchain.prompts: For prompt template management
+    - langchain.chains: For document processing chains
+    - retriever: Custom advanced retriever implementation
+    - config: Centralized configuration management
+    - evaluation: Comprehensive evaluation system (optional)
 """
 
 from langchain_openai import ChatOpenAI
@@ -18,7 +67,57 @@ logger = logging.getLogger(__name__)
 
 
 class EnhancedRAGPipeline:
-    """Enhanced RAG pipeline with advanced retrieval capabilities."""
+    """
+    Enhanced RAG pipeline with advanced retrieval capabilities and evaluation integration.
+    
+    This class implements a sophisticated RAG system that supports multiple retrieval
+    strategies, comprehensive evaluation metrics, and strategy comparison. It's designed
+    for education policy analysis but can be adapted for other domains.
+    
+    The pipeline supports six different retrieval strategies:
+    - Vector: Semantic similarity search using embeddings
+    - MMR: Maximum Marginal Relevance for diverse results
+    - Multi-Query: Query expansion and refinement
+    - BM25: Keyword-based traditional search
+    - Ensemble: Hybrid approach combining vector and BM25
+    - Compressed: LLM-reranked and filtered results
+    
+    Attributes:
+        config (RAGConfig): System configuration settings
+        llm (ChatOpenAI): Language model for answer generation
+        retriever (AdvancedRetriever): Multi-strategy document retriever
+        rag_prompt (PromptTemplate): Template for RAG prompts
+        document_chain: LangChain document processing chain
+    
+    Methods:
+        ask_question(): Ask a question using specified retrieval strategy
+        compare_strategies(): Compare performance across different strategies
+        evaluate_response(): Evaluate response quality with detailed metrics
+        benchmark_pipeline(): Run comprehensive performance benchmarks
+        get_pipeline_stats(): Get system statistics and configuration
+    
+    Example:
+        >>> pipeline = EnhancedRAGPipeline()
+        >>> result = pipeline.ask_question(
+        ...     "What are challenges in education policy implementation?",
+        ...     strategy="ensemble",
+        ...     max_docs=5,
+        ...     include_metadata=True
+        ... )
+        >>> print(result['answer'])
+        >>> print(f"Sources: {result['num_documents']} documents")
+        
+        # Compare different strategies
+        >>> comparison = pipeline.compare_strategies(
+        ...     "How effective are charter schools?",
+        ...     strategies=["vector", "ensemble", "bm25"]
+        ... )
+        >>> print(f"Best strategy: {comparison['best_strategy']}")
+    
+    Note:
+        The pipeline requires a properly configured environment with OpenAI API
+        access and pre-built vector stores. Use validate_config.py to check setup.
+    """
     
     def __init__(self):
         """Initialize the enhanced RAG pipeline."""

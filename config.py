@@ -1,6 +1,68 @@
 """
-Configuration management for the RAG system.
-Centralizes all configuration settings with validation and environment variable support.
+Configuration Management for Education Policy RAG System
+======================================================
+
+This module provides centralized configuration management for the RAG system,
+supporting environment variables, validation, and default settings.
+
+Key Features:
+- Environment variable integration with fallback defaults
+- Comprehensive validation of all configuration parameters
+- Type-safe configuration using dataclasses
+- Support for different deployment environments
+
+Classes:
+    RAGConfig: Main configuration dataclass with all system settings
+
+Functions:
+    get_config(): Get the global configuration instance
+    reload_config(): Reload configuration from environment
+    print_config(): Display current configuration for debugging
+
+Example Usage:
+    >>> from config import get_config
+    >>> config = get_config()
+    >>> print(config.model_name)
+    gpt-4
+    
+    # Override with environment variables
+    >>> import os
+    >>> os.environ['RAG_MODEL_NAME'] = 'gpt-3.5-turbo'
+    >>> config = reload_config()
+    >>> print(config.model_name)
+    gpt-3.5-turbo
+
+Environment Variables:
+    Required:
+        OPENAI_API_KEY: OpenAI API key for language models and embeddings
+        
+    Database & Storage:
+        RAG_DB_PATH: Path to SQLite database file (default: main.db)
+        RAG_VECTORSTORE_PATH: Path to FAISS vectorstore directory (default: ed_policy_vec)
+        
+    Language Model Settings:
+        RAG_MODEL_NAME: OpenAI model for text generation (default: gpt-4)
+        RAG_TEMPERATURE: Model creativity/randomness, 0.0-2.0 (default: 0.0)
+        RAG_MAX_TOKENS: Maximum tokens in model response (default: 2000)
+        
+    Retrieval Configuration:
+        RAG_RETRIEVAL_K: Number of documents to retrieve (default: 5)
+        RAG_SIMILARITY_THRESHOLD: Minimum similarity score, 0.0-1.0 (default: 0.7)
+        RAG_CHUNK_SIZE: Size of text chunks for processing (default: 1000)
+        RAG_CHUNK_OVERLAP: Overlap between text chunks (default: 200)
+        
+    Embedding Settings:
+        RAG_EMBEDDING_MODEL: OpenAI embedding model (default: text-embedding-ada-002)
+        
+    Application Settings:
+        RAG_APP_TITLE: Web application title (default: 🏛️ Education Policy RAG System)
+        RAG_MAX_CHAT_HISTORY: Maximum chat messages to retain (default: 10)
+        RAG_ENABLE_ANALYTICS: Enable usage analytics, true/false (default: true)
+        
+    Performance & Caching:
+        RAG_ENABLE_CACHING: Enable response caching, true/false (default: true)
+        RAG_CACHE_TTL: Cache time-to-live in seconds (default: 3600)
+    
 """
 
 import os
@@ -14,7 +76,55 @@ load_dotenv()
 
 @dataclass
 class RAGConfig:
-    """Configuration settings for the RAG system."""
+    """
+    Configuration settings for the RAG system.
+    
+    This dataclass contains all configuration parameters for the education policy
+    RAG system, including database settings, LLM parameters, retrieval settings,
+    and application configurations.
+    
+    Attributes:
+        Database Settings:
+            db_path (str): Path to SQLite database file
+            vectorstore_path (str): Path to FAISS vector store directory
+            
+        LLM Settings:
+            model_name (str): OpenAI model name for text generation
+            temperature (float): Model temperature (0.0-2.0)
+            max_tokens (int): Maximum tokens in model response
+            
+        Retrieval Settings:
+            retrieval_k (int): Number of documents to retrieve
+            similarity_threshold (float): Minimum similarity score
+            chunk_size (int): Size of text chunks for processing
+            chunk_overlap (int): Overlap between chunks
+            
+        Embedding Settings:
+            embedding_model (str): OpenAI embedding model name
+            
+        API Settings:
+            openai_api_key (str): OpenAI API key
+            
+        Application Settings:
+            app_title (str): Application title for web interface
+            max_chat_history (int): Maximum chat history to maintain
+            enable_analytics (bool): Whether to enable analytics
+            
+        Performance Settings:
+            enable_caching (bool): Whether to enable response caching
+            cache_ttl (int): Cache time-to-live in seconds
+    
+    Methods:
+        validate(): Validate all configuration parameters
+        from_env(): Create configuration from environment variables
+        to_dict(): Convert configuration to dictionary
+    
+    Example:
+        >>> config = RAGConfig()
+        >>> config.validate()
+        >>> print(config.model_name)
+        gpt-4
+    """
     
     # Database settings
     db_path: str = "main.db"

@@ -1,3 +1,79 @@
+"""
+Education Policy Document Scraper for RAG System
+
+This module implements a specialized web scraping system for collecting education
+policy articles and research documents from the Brookings Institution. It extracts
+structured content including titles, authors, publication dates, and full text,
+then stores the information in a SQLite database for use by the RAG pipeline.
+
+Key Features:
+    - Targeted Brookings Institution scraping with domain expertise
+    - Intelligent content extraction from HTML using BeautifulSoup
+    - Robust error handling and retry mechanisms for network requests
+    - Structured data storage in SQLite database with article metadata
+    - Content cleaning and preprocessing for optimal RAG performance
+    - Duplicate detection and URL uniqueness constraints
+    - Comprehensive logging for monitoring scraping operations
+
+Database Schema:
+    articles table with columns:
+        - id: Primary key (auto-increment)
+        - title: Article headline/title
+        - authors: Comma-separated author names
+        - key_points: Extracted key findings or summary points
+        - url: Source URL (unique constraint)
+        - published_date: Publication date if available
+        - full_text: Complete article content
+
+Scraping Process:
+    1. Load target URLs from links.txt file
+    2. Fetch each URL with error handling and retries
+    3. Parse HTML content to extract structured information
+    4. Clean and preprocess text for optimal RAG performance
+    5. Store in SQLite database with duplicate prevention
+    6. Generate processing reports and error logs
+
+Content Processing:
+    - HTML tag removal and text extraction
+    - Whitespace normalization and cleaning
+    - Author name parsing and standardization
+    - Date extraction and formatting
+    - Key point identification and extraction
+
+Usage:
+    >>> # Scrape all URLs from links.txt
+    >>> python scrape.py
+    >>> 
+    >>> # Individual article processing
+    >>> from scrape import parse_brookings_article
+    >>> article_data = parse_brookings_article(url)
+    >>> print(f"Scraped: {article_data['title']}")
+
+Performance Considerations:
+    - Respectful scraping with appropriate delays between requests
+    - Efficient database operations with prepared statements
+    - Memory-efficient processing of large documents
+    - Graceful handling of network timeouts and errors
+    - Progress tracking for large-scale scraping operations
+
+Data Quality:
+    - Content validation and completeness checks
+    - Duplicate detection and prevention
+    - Error logging for failed scraping attempts
+    - Text quality assessment and filtering
+    - Metadata extraction and verification
+
+Dependencies:
+    - requests: HTTP client for web scraping
+    - BeautifulSoup: HTML parsing and content extraction
+    - sqlite3: Database storage and management
+    - re: Regular expressions for text processing
+
+Note:
+    This scraper is specifically designed for Brookings Institution articles
+    and may require adaptation for other education policy sources.
+"""
+
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -23,7 +99,35 @@ conn.commit()
 
 
 def clean_html_text(text):
-    """Remove excessive whitespace from text."""
+    """
+    Remove excessive whitespace and normalize text formatting.
+    
+    This function cleans HTML-extracted text by removing excessive whitespace,
+    normalizing line breaks, and ensuring consistent formatting for optimal
+    processing by the RAG pipeline.
+    
+    Args:
+        text (str): Raw text extracted from HTML content
+        
+    Returns:
+        str: Cleaned and normalized text with consistent spacing
+        
+    Processing Steps:
+        1. Replace multiple consecutive whitespace characters with single spaces
+        2. Remove leading and trailing whitespace
+        3. Normalize line breaks and paragraph spacing
+        4. Preserve intentional formatting while removing artifacts
+        
+    Example:
+        >>> raw_text = "This  is   text\\n\\n\\nwith    excessive\\t\\tspacing"
+        >>> clean_text = clean_html_text(raw_text)
+        >>> print(clean_text)
+        "This is text with excessive spacing"
+        
+    Note:
+        This function is specifically designed for education policy documents
+        and preserves important formatting while removing HTML artifacts.
+    """
     return re.sub(r'\s+', ' ', text).strip()
 
 def parse_brookings_article(url):

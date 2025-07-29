@@ -1,6 +1,88 @@
 """
-Comprehensive evaluation system for the RAG pipeline.
-Provides metrics for answer quality, retrieval performance, and strategy comparison.
+Comprehensive Evaluation System for RAG Pipeline
+===============================================
+
+This module provides a complete evaluation framework for assessing RAG pipeline
+performance across multiple dimensions including answer quality, retrieval
+effectiveness, and system performance metrics.
+
+Key Features:
+- Multi-dimensional evaluation metrics (relevance, completeness, accuracy, clarity)
+- Retrieval performance analysis (precision, recall, diversity, coverage)
+- Automated benchmarking with statistical analysis
+- Strategy comparison and optimization recommendations
+- LLM-based quality assessment with structured scoring
+- Performance timing and efficiency metrics
+
+Classes:
+    EvaluationMetrics: Container for all evaluation metrics and scores
+    RAGEvaluator: Main evaluation engine with comprehensive assessment capabilities
+
+Functions:
+    quick_evaluate(): Fast single-question evaluation
+    run_quick_benchmark(): Quick benchmark with default questions
+
+Evaluation Dimensions:
+    Answer Quality (1-10 scale):
+    - Relevance: How well the answer addresses the specific question
+    - Completeness: Comprehensiveness of the response coverage
+    - Accuracy: Factual correctness based on retrieved context
+    - Clarity: Structure, readability, and coherence of the answer
+    
+    Retrieval Performance (0-1 scale):
+    - Precision: Proportion of relevant documents in results
+    - Recall: Coverage of relevant information available
+    - Diversity: Variety of sources and perspectives included
+    - Source Coverage: Breadth of authors and publications
+    
+    System Performance:
+    - Response Time: End-to-end processing duration
+    - Document Count: Number of documents successfully retrieved
+    - Strategy Efficiency: Comparative performance analysis
+
+Example Usage:
+    >>> from evaluation import RAGEvaluator, quick_evaluate
+    >>> 
+    >>> # Quick single evaluation
+    >>> metrics = quick_evaluate(
+    ...     "What are challenges in education policy?",
+    ...     strategy="ensemble"
+    ... )
+    >>> print(f"Overall Score: {metrics.overall_score:.2f}/10")
+    >>> print(f"Relevance: {metrics.relevance_score:.1f}/10")
+    >>> 
+    >>> # Detailed evaluation with custom evaluator
+    >>> evaluator = RAGEvaluator()
+    >>> result = evaluator.evaluate_single_query(
+    ...     "How effective are school choice programs?",
+    ...     strategy="vector"
+    ... )
+    >>> print(f"Answer Quality: {result.clarity_score:.1f}/10")
+    >>> print(f"Retrieval Precision: {result.retrieval_precision:.3f}")
+    >>> 
+    >>> # Strategy comparison
+    >>> comparison = evaluator.compare_strategies(
+    ...     "What role do teachers play in reform?",
+    ...     strategies=["vector", "ensemble", "bm25"]
+    ... )
+    >>> print(f"Best Strategy: {comparison['best_strategy']}")
+    >>> 
+    >>> # Full benchmark suite
+    >>> benchmark = evaluator.run_benchmark_suite()
+    >>> avg_score = benchmark["aggregate_metrics"]["avg_overall_score"]
+    >>> print(f"System Average: {avg_score:.2f}/10")
+
+Implementation Notes:
+    - Uses GPT-4 for evaluation to ensure high-quality assessment
+    - Implements structured prompting for consistent scoring
+    - Handles API rate limiting with automatic retries
+    - Provides detailed error handling and fallback mechanisms
+    - Supports custom question sets for domain-specific evaluation
+
+Dependencies:
+    - langchain_openai: For evaluation LLM access
+    - rag_pipeline: For pipeline integration and testing
+    - config: For system configuration access
 """
 
 import time
@@ -24,7 +106,55 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class EvaluationMetrics:
-    """Container for evaluation metrics."""
+    """
+    Comprehensive container for RAG evaluation metrics and scores.
+    
+    This dataclass stores all evaluation results from assessing RAG pipeline
+    performance, including answer quality metrics, retrieval performance
+    indicators, and system performance measurements.
+    
+    Attributes:
+        Answer Quality Metrics (1-10 scale):
+            relevance_score (float): How well answer addresses the question
+            completeness_score (float): Comprehensiveness of response
+            accuracy_score (float): Factual correctness based on context
+            clarity_score (float): Structure and readability of answer
+            
+        Retrieval Performance Metrics (0-1 scale):
+            retrieval_precision (float): Proportion of relevant documents
+            retrieval_recall (float): Coverage of available relevant info
+            document_diversity (float): Variety of sources and perspectives
+            source_coverage (float): Breadth of authors and publications
+            
+        Performance Metrics:
+            response_time (float): End-to-end processing time in seconds
+            num_documents_retrieved (int): Count of documents retrieved
+            strategy_used (str): Name of retrieval strategy employed
+            
+        Overall Assessment:
+            overall_score (float): Weighted average of all quality metrics
+    
+    Methods:
+        to_dict(): Convert metrics to dictionary for serialization
+        
+    Example:
+        >>> metrics = EvaluationMetrics(
+        ...     relevance_score=8.5,
+        ...     completeness_score=7.8,
+        ...     accuracy_score=9.2,
+        ...     clarity_score=8.1,
+        ...     retrieval_precision=0.75,
+        ...     response_time=2.4,
+        ...     num_documents_retrieved=5,
+        ...     strategy_used="ensemble"
+        ... )
+        >>> print(f"Overall Score: {metrics.overall_score:.1f}/10")
+        >>> metrics_dict = metrics.to_dict()
+    
+    Note:
+        All score fields default to 0.0, allowing for partial initialization
+        and gradual building of the metrics during evaluation process.
+    """
     
     # Answer Quality Metrics
     relevance_score: float = 0.0
@@ -52,7 +182,68 @@ class EvaluationMetrics:
 
 
 class RAGEvaluator:
-    """Comprehensive evaluator for RAG pipeline performance."""
+    """
+    Comprehensive RAG evaluation system for assessing pipeline performance.
+    
+    This class provides a complete evaluation framework for Retrieval-Augmented
+    Generation systems, offering multiple evaluation strategies and detailed
+    performance analysis across various dimensions.
+    
+    Features:
+        - Multi-dimensional evaluation (relevance, completeness, accuracy, clarity)
+        - Retrieval performance assessment (precision, recall, diversity)
+        - Automated quality scoring using language models
+        - Benchmark comparison across different retrieval strategies
+        - Performance timing and efficiency metrics
+        - Export capabilities for analysis and reporting
+    
+    Evaluation Dimensions:
+        1. Answer Quality (1-10 scale):
+           - Relevance: How well the answer addresses the specific question
+           - Completeness: Thoroughness and comprehensiveness of response
+           - Accuracy: Factual correctness based on provided context
+           - Clarity: Structure, readability, and logical flow
+        
+        2. Retrieval Performance (0-1 scale):
+           - Precision: Proportion of retrieved documents that are relevant
+           - Recall: Coverage of available relevant information
+           - Diversity: Variety of sources and perspectives retrieved
+           - Source Coverage: Breadth of authors and publication sources
+        
+        3. System Performance:
+           - Response Time: End-to-end processing latency
+           - Document Count: Number of documents retrieved and processed
+           - Strategy Effectiveness: Comparative performance analysis
+    
+    Args:
+        pipeline: Optional EnhancedRAGPipeline instance for evaluation
+    
+    Methods:
+        evaluate_answer(): Comprehensive answer quality assessment
+        evaluate_retrieval(): Retrieval system performance analysis
+        run_benchmark(): Compare performance across retrieval strategies
+        export_results(): Save evaluation results to file
+        
+    Example:
+        >>> from evaluation import RAGEvaluator
+        >>> evaluator = RAGEvaluator()
+        >>> 
+        >>> # Single answer evaluation
+        >>> metrics = evaluator.evaluate_answer(
+        ...     question="What are effective reading interventions?",
+        ...     answer="Research shows that phonics-based instruction...",
+        ...     context=retrieved_docs
+        ... )
+        >>> print(f"Overall Score: {metrics.overall_score:.1f}/10")
+        >>> 
+        >>> # Comprehensive benchmark across strategies
+        >>> benchmark_results = evaluator.run_benchmark(test_questions)
+        >>> evaluator.export_results(benchmark_results, "evaluation_report.json")
+    
+    Note:
+        The evaluator uses GPT-4 for automated scoring by default. Ensure
+        proper OpenAI API configuration for optimal performance.
+    """
     
     def __init__(self, pipeline: Optional[EnhancedRAGPipeline] = None):
         """Initialize the evaluator."""
