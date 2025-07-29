@@ -204,6 +204,89 @@ Answer:"""
         }
         
         return pipeline_stats
+    
+    def evaluate_response(self, question: str, strategy: str = "ensemble") -> Dict[str, Any]:
+        """
+        Evaluate a response using the integrated evaluation system.
+        
+        Args:
+            question: The question to evaluate
+            strategy: Retrieval strategy to use
+        
+        Returns:
+            Dictionary containing response and evaluation metrics
+        """
+        try:
+            # Import here to avoid circular imports
+            from evaluation import RAGEvaluator
+            
+            # Create evaluator instance
+            evaluator = RAGEvaluator(pipeline=self)
+            
+            # Get evaluation metrics
+            metrics = evaluator.evaluate_single_query(question, strategy)
+            
+            # Also get the actual response
+            response = self.ask_question(question, strategy=strategy, include_metadata=True)
+            
+            return {
+                "question": question,
+                "strategy": strategy,
+                "response": response,
+                "evaluation_metrics": metrics.to_dict(),
+                "overall_score": metrics.overall_score,
+                "performance_summary": {
+                    "answer_quality": (metrics.relevance_score + metrics.completeness_score + 
+                                     metrics.accuracy_score + metrics.clarity_score) / 4,
+                    "retrieval_performance": (metrics.retrieval_precision + metrics.retrieval_recall + 
+                                           metrics.document_diversity + metrics.source_coverage) / 4 * 10,
+                    "response_time": metrics.response_time
+                }
+            }
+            
+        except ImportError:
+            logger.warning("Evaluation module not available. Returning response without evaluation.")
+            response = self.ask_question(question, strategy=strategy, include_metadata=True)
+            return {
+                "question": question,
+                "strategy": strategy,
+                "response": response,
+                "evaluation_metrics": None,
+                "message": "Evaluation module not available"
+            }
+        except Exception as e:
+            logger.error(f"Error during evaluation: {e}")
+            response = self.ask_question(question, strategy=strategy, include_metadata=True)
+            return {
+                "question": question,
+                "strategy": strategy,
+                "response": response,
+                "evaluation_metrics": None,
+                "error": str(e)
+            }
+    
+    def benchmark_pipeline(self, test_questions: List[str] = None) -> Dict[str, Any]:
+        """
+        Run a comprehensive benchmark of the pipeline.
+        
+        Args:
+            test_questions: List of questions to test (uses defaults if None)
+        
+        Returns:
+            Dictionary containing benchmark results
+        """
+        try:
+            from evaluation import RAGEvaluator
+            
+            evaluator = RAGEvaluator(pipeline=self)
+            return evaluator.run_benchmark_suite(test_questions)
+            
+        except ImportError:
+            logger.error("Evaluation module not available for benchmarking")
+            return {"error": "Evaluation module not available"}
+        except Exception as e:
+            logger.error(f"Error during benchmarking: {e}")
+            return {"error": str(e)}
 
 
 # Factory function for backward compatibility
