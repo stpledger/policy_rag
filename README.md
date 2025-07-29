@@ -117,7 +117,7 @@ print(f"Overall Score: {metrics.overall_score:.2f}/10")
 
 ## 📊 Data Sources
 
-The system includes **45 education policy articles** from the Brookings Institution, covering:
+The system includes **10 education policy articles** from the Brookings Institution, covering:
 - Education policy implementation challenges
 - School choice and charter school effectiveness  
 - Teacher effectiveness and education reform
